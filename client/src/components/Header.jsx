@@ -1,0 +1,100 @@
+import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext';
+import { LogOut, Settings, Bell, BellOff } from 'lucide-react';
+import { useState } from 'react';
+import SettingsModal from './SettingsModal';
+
+const Header = () => {
+  const { user, logout } = useAuth();
+  const { isConnected, unreadCount, setUnreadCount } = useChat();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const toggleNotifications = () => {
+    setNotificationsEnabled(!notificationsEnabled);
+    if (unreadCount > 0) {
+      setUnreadCount(0);
+    }
+  };
+
+  return (
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div className="flex items-center justify-between">
+        {/* Left section */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div
+              className={`w-3 h-3 rounded-full ${
+                isConnected ? 'bg-green-500' : 'bg-red-500'
+              }`}
+              title={isConnected ? 'Connected' : 'Disconnected'}
+            ></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
+        </div>
+
+        {/* Right section */}
+        <div className="flex items-center space-x-4">
+          {/* Notifications */}
+          <button
+            onClick={toggleNotifications}
+            className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+            title={
+              notificationsEnabled
+                ? 'Disable notifications'
+                : 'Enable notifications'
+            }
+          >
+            {notificationsEnabled ? (
+              <Bell className="w-5 h-5" />
+            ) : (
+              <BellOff className="w-5 h-5" />
+            )}
+            {unreadCount > 0 && notificationsEnabled && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* User info */}
+          <div className="flex items-center space-x-3">
+            <img
+              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}`}
+              alt={user?.username}
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {user?.username}
+            </span>
+          </div>
+
+          {/* Settings */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+            title="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={logout}
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+    </header>
+  );
+};
+
+export default Header;
