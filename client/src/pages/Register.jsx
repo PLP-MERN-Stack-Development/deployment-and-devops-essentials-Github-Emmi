@@ -74,7 +74,7 @@ const Register = () => {
             Create Account
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Join ChatIO and start chatting
+            Join EmmiDev-Chat and start chatting
           </p>
         </div>
 

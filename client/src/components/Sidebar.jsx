@@ -23,7 +23,7 @@ const Sidebar = () => {
     <div className="w-64 bg-gray-100 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">ChatIO</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">EmmiDev-Chat</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {onlineUsers.length} online
         </p>

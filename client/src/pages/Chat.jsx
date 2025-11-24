@@ -47,7 +47,7 @@ const Chat = () => {
               <div className="text-center">
                 <div className="text-6xl mb-4">💬</div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-                  Welcome to ChatIO
+                  Welcome to EmmiDev-Chat
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Select a room to start chatting or create a new one
