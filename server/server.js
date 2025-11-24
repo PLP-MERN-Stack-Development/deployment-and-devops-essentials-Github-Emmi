@@ -97,6 +97,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API check route
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Socket.io Chat API',
+    version: '1.0.0',
+    status: 'active',
+    endpoints: {
+      auth: '/api/auth',
+      messages: '/api/messages',
+      rooms: '/api/rooms',
+      upload: '/api/upload',
+    },
+  });
+});
+
 // Setup Socket.io event handlers
 setupSocketHandlers(io);
 
