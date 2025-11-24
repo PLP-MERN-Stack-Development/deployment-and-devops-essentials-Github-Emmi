@@ -91,11 +91,11 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Floating create room button */}
-      {currentRoom && (
+      {/* Floating create room button - Only show on desktop when chat is open, or always show when no chat */}
+      {!currentRoom && (
         <button
           onClick={() => setShowCreateModal(true)}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-all hover:scale-110 flex items-center justify-center z-30"
+          className="lg:hidden fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-all hover:scale-110 flex items-center justify-center z-30"
           title="Create new room"
         >
           <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
