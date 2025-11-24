@@ -109,8 +109,77 @@ Click **Advanced** and add these environment variables:
   ```bash
   # Generate on macOS/Linux:
   openssl rand -base64 32
+  
+  # Or use Node.js:
+  node -e "console.log(require('crypto').randomBytes(64).toString('base64'))"
   ```
 - For `CLIENT_URL`: Leave as `http://localhost:5173` initially, update after Vercel deployment
+
+### 2.4.1 Advanced Configuration (Optional)
+
+Click **Advanced** to access additional settings:
+
+#### **Secret Files**
+Store plaintext files containing secret data (such as `.env` file or private keys).
+- Files are accessible during builds and at runtime
+- Access from your app's root directory or from `/etc/secrets/<filename>`
+- **For this app**: Not required (we use environment variables)
+- **Use case**: SSL certificates, private keys, service account JSON files
+
+#### **Health Check Path**
+Provide an HTTP endpoint that Render pings periodically to monitor your service.
+- **Recommended**: `/health`
+- **Our app**: Already has `/health` endpoint configured
+- Render uses this to detect if your service is running properly
+- Returns 200 status for healthy service
+
+**Configuration:**
+```
+Health Check Path: /health
+```
+
+#### **Pre-Deploy Command**
+Command that Render runs before the start command.
+- **Use cases**: Database migrations, cache warming, static asset uploads
+- **For this app**: Leave empty (not needed)
+- **Examples**:
+  ```bash
+  # Database migrations
+  npm run migrate
+  
+  # Seed database
+  npm run seed
+  
+  # Build assets
+  npm run build:assets
+  ```
+
+#### **Auto-Deploy**
+By default, Render automatically deploys when you push to GitHub.
+- **Recommended**: Enable (checked)
+- **Trigger**: On Commit to `main` branch
+- Automatically redeploys when you push changes
+- Can disable for manual deployment control
+
+**Build Filters (Optional):**
+- **Included Paths**: Only trigger deploy when these paths change
+  - Example: `server/**` (only deploy when server code changes)
+- **Ignored Paths**: Don't trigger deploy when these paths change
+  - Example: `README.md`, `docs/**`, `*.md`
+  - Useful to avoid unnecessary deploys for documentation changes
+
+**Recommended Settings for This App:**
+```
+Auto-Deploy: ✅ Enabled
+Trigger: On Commit
+Included Paths: (leave empty to include all)
+Ignored Paths: 
+  - *.md
+  - docs/**
+  - client/**
+  - .gitignore
+  - LICENSE
+```
 
 ### 2.5 Deploy Backend
 
