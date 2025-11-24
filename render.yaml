@@ -1,0 +1,32 @@
+services:
+  # Web Service (Express + Socket.io Server)
+  - type: web
+    name: socketio-chat-server
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: MAX_FILE_SIZE
+        value: 5242880
+      - key: UPLOAD_PATH
+        value: ./uploads
+      - key: SOCKET_PING_TIMEOUT
+        value: 60000
+      - key: SOCKET_PING_INTERVAL
+        value: 25000
+    healthCheckPath: /health
+    autoDeploy: true
+    plan: free
