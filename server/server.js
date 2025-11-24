@@ -73,12 +73,17 @@ const authRoutes = require('./routes/authRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const friendRoutes = require('./routes/friendRoutes');
 
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/friends', friendRoutes);
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Root route
 app.get('/', (req, res) => {
@@ -108,6 +113,7 @@ app.get('/api', (req, res) => {
       messages: '/api/messages',
       rooms: '/api/rooms',
       upload: '/api/upload',
+      friends: '/api/friends',
     },
   });
 });

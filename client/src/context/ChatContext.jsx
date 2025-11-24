@@ -27,6 +27,8 @@ export const ChatProvider = ({ children }) => {
   const [typingUsers, setTypingUsers] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadRooms, setUnreadRooms] = useState({}); // Track unread messages per room
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [friends, setFriends] = useState([]);
 
   // Connect to socket
   useEffect(() => {
@@ -113,6 +115,64 @@ export const ChatProvider = ({ children }) => {
       toast.error(error.message || 'An error occurred');
     };
 
+    const onFriendRequestReceived = (data) => {
+      setFriendRequests((prev) => [
+        {
+          _id: data.requestId,
+          sender: data.sender,
+          createdAt: data.createdAt,
+        },
+        ...prev,
+      ]);
+      playNotificationSound();
+      toast(`${data.sender.username} sent you a friend request!`, {
+        icon: '👋',
+        duration: 5000,
+      });
+    };
+
+    const onFriendRequestAccepted = (data) => {
+      // Remove from sent requests if needed
+      toast.success(`${data.acceptedBy.username} accepted your friend request!`);
+      // Add friend to friends list
+      setFriends((prev) => [
+        ...prev,
+        {
+          ...data.acceptedBy,
+          conversationId: data.conversationId,
+        },
+      ]);
+      // Add room to rooms
+      if (data.room) {
+        setRooms((prev) => [...prev, data.room]);
+      }
+    };
+
+    const onFriendRequestDeclined = (data) => {
+      toast(`${data.declinedBy.username} declined your friend request`, {
+        icon: '😔',
+      });
+    };
+
+    const onFriendshipCreated = (data) => {
+      // Add friend to friends list
+      setFriends((prev) => [
+        ...prev,
+        {
+          ...data.friend,
+          conversationId: data.conversationId,
+          friendshipId: data.friendshipId,
+        },
+      ]);
+      // Add room to rooms
+      if (data.room) {
+        setRooms((prev) => {
+          const exists = prev.find((r) => r._id === data.room._id);
+          return exists ? prev : [...prev, data.room];
+        });
+      }
+    };
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('receive_message', onReceiveMessage);
@@ -123,6 +183,10 @@ export const ChatProvider = ({ children }) => {
     socket.on('user_left_room', onUserLeftRoom);
     socket.on('message_reaction', onMessageReaction);
     socket.on('error', onError);
+    socket.on('friend_request_received', onFriendRequestReceived);
+    socket.on('friend_request_accepted', onFriendRequestAccepted);
+    socket.on('friend_request_declined', onFriendRequestDeclined);
+    socket.on('friendship_created', onFriendshipCreated);
 
     return () => {
       socket.off('connect', onConnect);
@@ -135,6 +199,10 @@ export const ChatProvider = ({ children }) => {
       socket.off('user_left_room', onUserLeftRoom);
       socket.off('message_reaction', onMessageReaction);
       socket.off('error', onError);
+      socket.off('friend_request_received', onFriendRequestReceived);
+      socket.off('friend_request_accepted', onFriendRequestAccepted);
+      socket.off('friend_request_declined', onFriendRequestDeclined);
+      socket.off('friendship_created', onFriendshipCreated);
     };
   }, [user]);
 
@@ -254,6 +322,86 @@ export const ChatProvider = ({ children }) => {
     }
   }, [rooms, joinRoom, loadRoomMessages]);
 
+  // Fetch friend requests
+  const fetchFriendRequests = useCallback(async () => {
+    try {
+      const response = await api.get('/friends/requests');
+      setFriendRequests(response.data.data);
+    } catch (error) {
+      console.error('Error fetching friend requests:', error);
+    }
+  }, []);
+
+  // Fetch friends list
+  const fetchFriends = useCallback(async () => {
+    try {
+      const response = await api.get('/friends');
+      setFriends(response.data.data);
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+    }
+  }, []);
+
+  // Send friend request
+  const sendFriendRequest = useCallback(async (receiverId) => {
+    try {
+      const response = await api.post('/friends/request', { receiverId });
+      return response.data;
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      throw error.response?.data || error;
+    }
+  }, []);
+
+  // Accept friend request
+  const acceptFriendRequest = useCallback(async (requestId) => {
+    try {
+      const response = await api.post(`/friends/accept/${requestId}`);
+      
+      // Remove from friend requests
+      setFriendRequests((prev) => prev.filter((req) => req._id !== requestId));
+      
+      // Fetch updated friends and rooms
+      await fetchFriends();
+      await fetchRooms();
+      
+      // Auto-open the new conversation
+      if (response.data.data?.conversationId) {
+        joinRoom(response.data.data.conversationId);
+        await loadRoomMessages(response.data.data.conversationId);
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      throw error.response?.data || error;
+    }
+  }, [fetchFriends, fetchRooms, joinRoom, loadRoomMessages]);
+
+  // Decline friend request
+  const declineFriendRequest = useCallback(async (requestId) => {
+    try {
+      const response = await api.post(`/friends/decline/${requestId}`);
+      
+      // Remove from friend requests
+      setFriendRequests((prev) => prev.filter((req) => req._id !== requestId));
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error declining friend request:', error);
+      throw error.response?.data || error;
+    }
+  }, []);
+
+  // Fetch initial data when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchRooms();
+      fetchFriendRequests();
+      fetchFriends();
+    }
+  }, [isAuthenticated, fetchRooms, fetchFriendRequests, fetchFriends]);
+
   const value = {
     isConnected,
     messages,
@@ -263,6 +411,8 @@ export const ChatProvider = ({ children }) => {
     typingUsers,
     unreadCount,
     unreadRooms,
+    friendRequests,
+    friends,
     setUnreadCount,
     fetchRooms,
     joinRoom,
@@ -275,6 +425,11 @@ export const ChatProvider = ({ children }) => {
     loadRoomMessages,
     createRoom,
     startDirectChat,
+    fetchFriendRequests,
+    fetchFriends,
+    sendFriendRequest,
+    acceptFriendRequest,
+    declineFriendRequest,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -65,6 +71,31 @@ userSchema.pre('save', async function () {
 // Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Check if user is friend with another user
+userSchema.methods.isFriend = function (userId) {
+  return this.friends.some(
+    (friendId) => friendId.toString() === userId.toString()
+  );
+};
+
+// Get pending friend requests received by this user
+userSchema.methods.getPendingRequests = async function () {
+  const FriendRequest = mongoose.model('FriendRequest');
+  return await FriendRequest.find({
+    receiver: this._id,
+    status: 'pending',
+  }).populate('sender', 'username email avatar');
+};
+
+// Get pending friend requests sent by this user
+userSchema.methods.getSentRequests = async function () {
+  const FriendRequest = mongoose.model('FriendRequest');
+  return await FriendRequest.find({
+    sender: this._id,
+    status: 'pending',
+  }).populate('receiver', 'username email avatar');
 };
 
 // Update avatar URL with username

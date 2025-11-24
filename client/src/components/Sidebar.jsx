@@ -2,14 +2,22 @@ import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 import { formatRelativeTime } from '../utils/helpers';
 import { Users, Hash, MessageCircle } from 'lucide-react';
+import FriendRequestList from './FriendRequestList';
 
 const Sidebar = ({ onClose }) => {
-  const { rooms, currentRoom, joinRoom, onlineUsers, startDirectChat, unreadRooms } = useChat();
+  const { rooms, currentRoom, joinRoom, onlineUsers, startDirectChat, unreadRooms, friends } = useChat();
   const { user } = useAuth();
 
   // Separate rooms and direct messages
   const groupRooms = rooms.filter((room) => room.roomType !== 'direct');
   const directMessages = rooms.filter((room) => room.roomType === 'direct');
+
+  // Filter online users to show only friends (and self)
+  const onlineFriends = onlineUsers.filter(onlineUser => {
+    if (onlineUser.userId === user?._id) return true; // Always show self
+    // Check if user is in friends list
+    return friends.some(friend => friend._id === onlineUser.userId);
+  });
 
   const getDirectChatName = (room) => {
     if (room.roomType === 'direct' && room.members) {
@@ -43,6 +51,9 @@ const Sidebar = ({ onClose }) => {
 
       {/* Rooms list */}
       <div className="flex-1 overflow-y-auto">
+        {/* Friend Requests */}
+        <FriendRequestList />
+
         {/* Group Rooms */}
         <div className="p-3 sm:p-4">
           <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
@@ -129,34 +140,40 @@ const Sidebar = ({ onClose }) => {
         <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
           <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 flex items-center">
             <Users className="w-3 h-3 mr-1" />
-            Online ({onlineUsers.length})
+            Online Friends ({onlineFriends.length})
           </h3>
           <div className="space-y-2">
-            {onlineUsers.map((onlineUser) => (
-              <button
-                key={onlineUser.userId}
-                onClick={() => handleDirectChatClick(onlineUser.userId)}
-                disabled={onlineUser.userId === user?._id}
-                className={`w-full flex items-center space-x-2 text-xs sm:text-sm px-2 py-2 sm:py-1 rounded transition-colors ${
-                  onlineUser.userId === user?._id
-                    ? 'cursor-default'
-                    : 'hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer active:bg-gray-300 dark:active:bg-gray-700'
-                }`}
-                title={onlineUser.userId === user?._id ? 'You' : `Chat with ${onlineUser.username}`}
-              >
-                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                <span className={`flex-1 text-left truncate ${
-                  onlineUser.userId === user?._id
-                    ? 'text-gray-500 dark:text-gray-500'
-                    : 'text-gray-700 dark:text-gray-300'
-                }`}>
-                  {onlineUser.username} {onlineUser.userId === user?._id && '(You)'}
-                </span>
-                {onlineUser.userId !== user?._id && (
-                  <MessageCircle className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                )}
-              </button>
-            ))}
+            {onlineFriends.length === 0 ? (
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
+                No friends online
+              </p>
+            ) : (
+              onlineFriends.map((onlineUser) => (
+                <button
+                  key={onlineUser.userId}
+                  onClick={() => handleDirectChatClick(onlineUser.userId)}
+                  disabled={onlineUser.userId === user?._id}
+                  className={`w-full flex items-center space-x-2 text-xs sm:text-sm px-2 py-2 sm:py-1 rounded transition-colors ${
+                    onlineUser.userId === user?._id
+                      ? 'cursor-default'
+                      : 'hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer active:bg-gray-300 dark:active:bg-gray-700'
+                  }`}
+                  title={onlineUser.userId === user?._id ? 'You' : `Chat with ${onlineUser.username}`}
+                >
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className={`flex-1 text-left truncate ${
+                    onlineUser.userId === user?._id
+                      ? 'text-gray-500 dark:text-gray-500'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {onlineUser.username} {onlineUser.userId === user?._id && '(You)'}
+                  </span>
+                  {onlineUser.userId !== user?._id && (
+                    <MessageCircle className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>

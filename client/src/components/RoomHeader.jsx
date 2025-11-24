@@ -5,6 +5,7 @@ import { Settings, Hash, MessageCircle, LogOut, Trash2 } from 'lucide-react';
 import RoomSettingsModal from './RoomSettingsModal';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { formatRelativeTime } from '../utils/helpers';
 
 const RoomHeader = () => {
   const { rooms, currentRoom, fetchRooms, leaveRoom } = useChat();
@@ -28,6 +29,28 @@ const RoomHeader = () => {
       return otherMember?.username || room.name;
     }
     return room.name;
+  };
+
+  // Get last seen or online status for direct messages
+  const getLastSeenText = () => {
+    if (!isDirect || !room.members) return null;
+    
+    const otherMember = room.members.find((m) => m._id !== user?._id);
+    if (!otherMember) return null;
+
+    if (otherMember.status === 'online') {
+      return <span className="text-green-500 text-xs sm:text-sm">● Online</span>;
+    }
+
+    if (otherMember.lastSeen) {
+      return (
+        <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+          Last seen {formatRelativeTime(otherMember.lastSeen)}
+        </span>
+      );
+    }
+
+    return null;
   };
 
   const handleRoomUpdated = () => {
@@ -111,9 +134,9 @@ const RoomHeader = () => {
                 </p>
               )}
               {isDirect && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Direct Message
-                </p>
+                <div className="flex items-center gap-2">
+                  {getLastSeenText()}
+                </div>
               )}
             </div>
           </div>

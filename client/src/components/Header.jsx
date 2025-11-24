@@ -3,6 +3,7 @@ import { useChat } from '../context/ChatContext';
 import { LogOut, Settings, Bell, BellOff } from 'lucide-react';
 import { useState } from 'react';
 import SettingsModal from './SettingsModal';
+import SearchBar from './SearchBar';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -19,9 +20,9 @@ const Header = () => {
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-6 py-3 sm:py-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 sm:gap-4">
         {/* Left section */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           <div className="flex items-center space-x-1 sm:space-x-2">
             <div
               className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
@@ -35,8 +36,13 @@ const Header = () => {
           </div>
         </div>
 
+        {/* Center - Search Bar */}
+        <div className="flex-1 max-w-md mx-2 sm:mx-4">
+          <SearchBar />
+        </div>
+
         {/* Right section */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           {/* Notifications */}
           <button
             onClick={toggleNotifications}
