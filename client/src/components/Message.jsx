@@ -14,28 +14,28 @@ const Message = ({ message }) => {
   const reactions = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
   return (
-    <div className={`flex ${isSent ? 'justify-end' : 'justify-start'} mb-4 group`}>
-      <div className={`flex ${isSent ? 'flex-row-reverse' : 'flex-row'} items-end max-w-[70%]`}>
+    <div className={`flex ${isSent ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 group`}>
+      <div className={`flex ${isSent ? 'flex-row-reverse' : 'flex-row'} items-end max-w-[85%] sm:max-w-[70%]`}>
         {/* Avatar */}
         {!isSent && (
           <img
             src={message.sender.avatar || `https://ui-avatars.com/api/?name=${message.sender.username}`}
             alt={message.sender.username}
-            className="w-8 h-8 rounded-full mr-2"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-1.5 sm:mr-2 flex-shrink-0"
           />
         )}
 
-        <div>
+        <div className="min-w-0 flex-1">
           {/* Sender name (for received messages) */}
           {!isSent && (
-            <div className="text-xs text-gray-500 mb-1 ml-2">
+            <div className="text-xs text-gray-500 mb-1 ml-1 sm:ml-2">
               {message.sender.username}
             </div>
           )}
 
           {/* Message bubble */}
           <div
-            className={`rounded-2xl px-4 py-2 ${
+            className={`rounded-2xl px-3 py-2 sm:px-4 break-words ${
               isSent
                 ? 'bg-primary-500 text-white'
                 : 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
@@ -46,7 +46,7 @@ const Message = ({ message }) => {
               <img
                 src={message.fileUrl}
                 alt={message.fileName}
-                className="max-w-full rounded-lg mb-2 max-h-64 object-cover"
+                className="max-w-full rounded-lg mb-2 max-h-48 sm:max-h-64 object-cover"
               />
             )}
 
@@ -57,9 +57,9 @@ const Message = ({ message }) => {
                 rel="noopener noreferrer"
                 className="flex items-center space-x-2 p-2 bg-white bg-opacity-20 rounded-lg mb-2 hover:bg-opacity-30"
               >
-                <span className="text-2xl">📎</span>
-                <div>
-                  <div className="font-medium">{message.fileName}</div>
+                <span className="text-xl sm:text-2xl flex-shrink-0">📎</span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm sm:text-base truncate">{message.fileName}</div>
                   <div className="text-xs opacity-75">{message.fileSize}</div>
                 </div>
               </a>
@@ -67,7 +67,7 @@ const Message = ({ message }) => {
 
             {/* Text content */}
             {message.content && (
-              <p className="break-words whitespace-pre-wrap">{message.content}</p>
+              <p className="break-words whitespace-pre-wrap text-sm sm:text-base">{message.content}</p>
             )}
 
             {/* Timestamp */}
@@ -83,7 +83,7 @@ const Message = ({ message }) => {
 
           {/* Reactions */}
           {message.reactions && message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1 ml-2">
+            <div className="flex flex-wrap gap-1 mt-1 ml-1 sm:ml-2">
               {Object.entries(
                 message.reactions.reduce((acc, r) => {
                   acc[r.emoji] = (acc[r.emoji] || 0) + 1;
@@ -92,7 +92,7 @@ const Message = ({ message }) => {
               ).map(([emoji, count]) => (
                 <span
                   key={emoji}
-                  className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full"
+                  className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
                 >
                   {emoji} {count}
                 </span>
@@ -100,13 +100,13 @@ const Message = ({ message }) => {
             </div>
           )}
 
-          {/* Quick reactions (show on hover) */}
-          <div className="hidden group-hover:flex gap-1 mt-1 ml-2">
+          {/* Quick reactions (show on hover for desktop, tap for mobile) */}
+          <div className="hidden sm:group-hover:flex gap-1 mt-1 ml-2">
             {reactions.map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => handleReaction(emoji)}
-                className="text-lg hover:scale-125 transition-transform"
+                className="text-base sm:text-lg hover:scale-125 transition-transform"
                 title={`React with ${emoji}`}
               >
                 {emoji}

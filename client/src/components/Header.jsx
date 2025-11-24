@@ -18,29 +18,29 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
         {/* Left section */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <div
-              className={`w-3 h-3 rounded-full ${
+              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
                 isConnected ? 'bg-green-500' : 'bg-red-500'
               }`}
               title={isConnected ? 'Connected' : 'Disconnected'}
             ></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
         </div>
 
         {/* Right section */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Notifications */}
           <button
             onClick={toggleNotifications}
-            className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+            className="relative p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
             title={
               notificationsEnabled
                 ? 'Disable notifications'
@@ -48,25 +48,25 @@ const Header = () => {
             }
           >
             {notificationsEnabled ? (
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (
-              <BellOff className="w-5 h-5" />
+              <BellOff className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
             {unreadCount > 0 && notificationsEnabled && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {/* User info */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <img
               src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}`}
               alt={user?.username}
-              className="w-8 h-8 rounded-full"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full"
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:inline">
               {user?.username}
             </span>
           </div>
@@ -74,19 +74,19 @@ const Header = () => {
           {/* Settings */}
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+            className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
             title="Settings"
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Logout */}
           <button
             onClick={logout}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors"
+            className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors"
             title="Logout"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

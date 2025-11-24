@@ -120,37 +120,37 @@ const MessageInput = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-4 bg-white dark:bg-gray-800">
+    <form onSubmit={handleSubmit} className="border-t p-3 sm:p-4 bg-white dark:bg-gray-800">
       {/* File preview */}
       {file && (
         <div className="mb-2 flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-          <div className="flex items-center space-x-2">
-            <Paperclip className="w-4 h-4" />
-            <span className="text-sm truncate max-w-xs">{file.name}</span>
-            <span className="text-xs text-gray-500">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <Paperclip className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-xs sm:text-sm truncate">{file.name}</span>
+            <span className="text-xs text-gray-500 flex-shrink-0">
               ({(file.size / 1024).toFixed(1)} KB)
             </span>
           </div>
           <button
             type="button"
             onClick={removeFile}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded ml-2 flex-shrink-0"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3 sm:w-4 sm:h-4" />
           </button>
         </div>
       )}
 
       {/* Input area */}
-      <div className="flex items-end space-x-2">
+      <div className="flex items-end space-x-1 sm:space-x-2">
         {/* File upload button */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 text-gray-500 hover:text-primary-500 transition-colors"
+          className="p-1.5 sm:p-2 text-gray-500 hover:text-primary-500 transition-colors flex-shrink-0"
           title="Attach file"
         >
-          <Paperclip className="w-5 h-5" />
+          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
         <input
           ref={fileInputRef}
@@ -165,7 +165,7 @@ const MessageInput = () => {
           value={message}
           onChange={handleInputChange}
           placeholder="Type a message..."
-          className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white max-h-32"
+          className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 sm:px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white max-h-32 text-sm sm:text-base"
           rows={1}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -179,12 +179,12 @@ const MessageInput = () => {
         <button
           type="submit"
           disabled={(!message.trim() && !file) || uploading}
-          className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 sm:p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
         >
           {uploading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           )}
         </button>
       </div>
