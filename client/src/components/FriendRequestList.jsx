@@ -32,7 +32,7 @@ const FriendRequestList = () => {
       <div className="p-3 sm:p-4">
         <div className="flex items-center gap-2 mb-3">
           <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-          <h3 className="text-white font-semibold text-sm sm:text-base">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white drop-shadow-sm" style={{textShadow: '0 1px 4px rgba(0,0,0,0.12)'}}>
             Friend Requests
           </h3>
           <span className="ml-auto bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
