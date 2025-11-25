@@ -2,6 +2,7 @@ import { formatMessageTime } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { useState, useRef, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const Message = ({ message }) => {
   const { user } = useAuth();
@@ -12,6 +13,9 @@ const Message = ({ message }) => {
   const [showMobilePicker, setShowMobilePicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ top: 0, isAbove: false });
   const [isLongPressing, setIsLongPressing] = useState(false);
+  const [doubleTapScale, setDoubleTapScale] = useState(false);
+  const [replyHighlight, setReplyHighlight] = useState(false);
+  const swipeTriggeredRef = useRef(false);
   
   const touchStartRef = useRef(null);
   const longPressTimerRef = useRef(null);
@@ -19,7 +23,12 @@ const Message = ({ message }) => {
   const touchStartPosRef = useRef({ x: 0, y: 0 });
   const messageRef = useRef(null);
 
-  const handleReaction = (emoji) => {
+  // Handles emoji reaction from both desktop and mobile pickers
+  const handleReaction = (emoji, e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     addReaction(message._id, emoji);
     setShowMobilePicker(false);
   };
@@ -44,6 +53,15 @@ const Message = ({ message }) => {
     });
   };
 
+  // Debounce helper
+  const debounce = (fn, delay) => {
+    let timer;
+    return (...args) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  };
+
   // Touch event handlers
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
@@ -51,13 +69,15 @@ const Message = ({ message }) => {
     touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
     setIsLongPressing(false);
 
-    // Start long press timer (500ms)
+    // Prevent text selection
+    document.body.style.userSelect = 'none';
+
+    // Start long press timer (debounced)
     longPressTimerRef.current = setTimeout(() => {
       // Haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
-      
       setIsLongPressing(true);
       calculatePickerPosition();
       setShowMobilePicker(true);
@@ -76,20 +96,26 @@ const Message = ({ message }) => {
         longPressTimerRef.current = null;
       }
       setIsLongPressing(false);
+      document.body.style.userSelect = '';
     }
 
     // Swipe right detection (>50px horizontal)
-    if (deltaX > 50 && deltaY < 30 && touch.clientX > touchStartPosRef.current.x) {
+    if (
+      !swipeTriggeredRef.current &&
+      deltaX > 50 &&
+      deltaY < 30 &&
+      touch.clientX > touchStartPosRef.current.x
+    ) {
+      swipeTriggeredRef.current = true;
       // Cancel long press
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
       }
-      
-      // Trigger swipe right action (reply)
-      // TODO: Implement reply functionality in ChatContext
-      console.log('Swipe right to reply:', message._id);
-      
+      // Placeholder reply action: highlight and toast
+      setReplyHighlight(true);
+      toast.success('Reply action triggered!');
+      setTimeout(() => setReplyHighlight(false), 500);
       // Haptic feedback for swipe
       if (navigator.vibrate) {
         navigator.vibrate(30);
@@ -98,33 +124,36 @@ const Message = ({ message }) => {
   };
 
   const handleTouchEnd = (e) => {
+    swipeTriggeredRef.current = false;
     const touchDuration = Date.now() - touchStartRef.current;
-    
+
     // Clear long press timer
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
 
+    // Restore text selection
+    document.body.style.userSelect = '';
+
     // Double tap detection (<300ms between taps)
     const now = Date.now();
     const timeSinceLastTap = now - lastTapRef.current;
-    
+
     if (timeSinceLastTap < 300 && touchDuration < 200) {
       // Double tap detected - quick react with ❤️
       handleReaction('❤️');
-      
+      setDoubleTapScale(true);
+      setTimeout(() => setDoubleTapScale(false), 250);
       // Haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate([30, 50, 30]); // Double vibration pattern
       }
-      
       // Reset tap timer
       lastTapRef.current = 0;
     } else {
       lastTapRef.current = now;
     }
-
     setIsLongPressing(false);
   };
 
@@ -134,6 +163,7 @@ const Message = ({ message }) => {
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
       }
+      document.body.style.userSelect = '';
     };
   }, []);
 
@@ -154,6 +184,7 @@ const Message = ({ message }) => {
         longPressTimerRef.current = null;
       }
       setIsLongPressing(false);
+      document.body.style.userSelect = '';
     };
 
     if (showMobilePicker) {
@@ -192,11 +223,11 @@ const Message = ({ message }) => {
 
           {/* Message bubble */}
           <div
-            className={`rounded-2xl px-3 py-2 sm:px-4 break-words transition-transform ${
+            className={`rounded-2xl px-3 py-2 sm:px-4 break-words transition-transform duration-200 ${
               isSent
                 ? 'bg-primary-500 text-white'
                 : 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-            } ${isLongPressing ? 'scale-105 ring-2 ring-primary-300' : ''}`}
+            } ${isLongPressing ? 'scale-105 ring-2 ring-primary-300' : ''} ${doubleTapScale ? 'scale-110 ring-2 ring-pink-300' : ''} ${replyHighlight ? 'ring-2 ring-green-400 scale-105' : ''}`}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -262,13 +293,24 @@ const Message = ({ message }) => {
           )}
 
           {/* Quick reactions (show on hover for desktop, tap for mobile) */}
-          <div className="hidden sm:group-hover:flex gap-1 mt-1 ml-2">
+          <div
+            className="hidden sm:group-hover:flex gap-1 mt-1 ml-2"
+            role="group"
+            aria-label="React to message"
+          >
             {reactions.map((emoji) => (
               <button
                 key={emoji}
-                onClick={() => handleReaction(emoji)}
+                onClick={(e) => handleReaction(emoji, e)}
                 className="text-base sm:text-lg hover:scale-125 transition-transform"
                 title={`React with ${emoji}`}
+                aria-label={`React with ${emoji}`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleReaction(emoji, e);
+                  }
+                }}
               >
                 {emoji}
               </button>
@@ -281,7 +323,12 @@ const Message = ({ message }) => {
               {/* Backdrop */}
               <div 
                 className="fixed inset-0 z-40 bg-black bg-opacity-20 sm:hidden"
-                onClick={() => setShowMobilePicker(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMobilePicker(false);
+                }}
+                aria-label="Close emoji picker"
+                tabIndex={-1}
               />
               
               {/* Floating Picker */}
@@ -293,14 +340,17 @@ const Message = ({ message }) => {
                   [pickerPosition.isAbove ? 'bottom' : 'top']: `${Math.abs(pickerPosition.top)}px`,
                 }}
                 onClick={(e) => e.stopPropagation()}
+                role="group"
+                aria-label="Emoji picker"
               >
                 {mobileReactions.map((emoji) => (
                   <button
                     key={emoji}
-                    onClick={() => handleReaction(emoji)}
+                    onClick={(e) => handleReaction(emoji, e)}
                     className="text-2xl hover:scale-125 active:scale-110 transition-transform
                       w-10 h-10 flex items-center justify-center rounded-full
                       hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label={`React with ${emoji}`}
                   >
                     {emoji}
                   </button>
