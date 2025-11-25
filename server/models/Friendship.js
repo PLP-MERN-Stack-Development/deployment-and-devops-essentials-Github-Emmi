@@ -71,11 +71,10 @@ friendshipSchema.methods.getFriendId = function (currentUserId) {
 };
 
 // Pre-save hook to ensure user1 < user2 (for consistent ordering)
-friendshipSchema.pre('save', function (next) {
+friendshipSchema.pre('save', function () {
   if (this.user1.toString() > this.user2.toString()) {
     [this.user1, this.user2] = [this.user2, this.user1];
   }
-  next();
 });
 
 const Friendship = mongoose.model('Friendship', friendshipSchema);
